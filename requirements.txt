@@ -2,3 +2,4 @@ python-telegram-bot==20.0a4
 yt-dlp
 ffmpeg
 requests
+openai

@@ -11,7 +11,13 @@ import yt_dlp
 from telegram import InputMediaAudio, InputMediaVideo, Update, ReplyKeyboardRemove
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 
-API_HASH = os.environ.get('BOT_TOKEN')
+#import openai
+import openai
+
+API_HASH = os.environ.get('TG_ULTRA_BOT_TOKEN')
+# API_HASH = ''
+openai.api_key = os.environ.get('OPENAI_API_KEY')
+# openai.api_key = ''
 
 def convert_html(string):
     string= string.replace('<', '&lt')
@@ -171,7 +177,7 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = update.effective_user
     print(update.message['text']+" - Help Command Issued")
     await context.bot.delete_message(chat_id=update.message.chat.id, message_id=update.message.message_id)
-    await context.bot.send_message(chat_id=update.message.chat.id, text='''<b><u> A lot of help commands available.</u></b>\n \n    <code>/start</code> - <i>Check whether bot is working or not.</i>\n    <code>/help</code> - <i>This menu is displayed.</i>\n    <code>/clean</code> - <i>Resets the bot server to the deployment time.</i>\n \n    <b>Any Sort of Public Video Links </b> - <i>Sends you video upto 50MB using that link.</i>\n\n    <code>/ytaudio </code><u>your_youtube_link</u> - <i>Sends audio from link.</i> \n\n\n<b>Isn't this help enough ???</b>''',parse_mode='HTML')
+    await context.bot.send_message(chat_id=update.message.chat.id, text='''<b><u> A lot of help commands available.</u></b>\n \n    <code>/start</code> - <i>Check whether bot is working or not.</i>\n    <code>/help</code> - <i>This menu is displayed.</i>\n    <code>/clean</code> - <i>Resets the bot server to the deployment time.</i>\n \n    <b>Any Sort of Public Video Links </b> - <i>Sends you video upto 50MB using that link.</i>\n\n    <code>/ytaudio </code><u>your_youtube_link</u> - <i>Sends audio from link.</i> \n\n <b> Some OpenAI tools :</b>\n    &#8226;<code>/dalle </code><u>Write Something to generate Image from.</u> - <i>Sends pictures from text.</i>\n    &#8226;<code>/gpt </code><u>Write Something to generate Text from.</u> - <i>Completes Your Text.</i> \n\n<b>Isn't this help enough ???</b>''',parse_mode='HTML')
 
 #''''''
 
@@ -192,6 +198,42 @@ async def yt_audio(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     except BaseException:
         print("Audio Download Error")
         await context.bot.send_message(chat_id=update.message.chat.id, text="Sorry, Couldn't download audio of from given link : <code>{}</code> . \n Check link again and make sure if it works.".format(link),parse_mode='HTML')
+
+async def dalle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    
+    rawtext = str((update.message['text']))
+    generate = rawtext[6:]
+    print("Generating Image from Text : "+ generate)
+    try :
+        response = openai.Image.create(prompt=generate, n=1, size="1024x1024")
+        image_url = response['data'][0]['url']
+        await context.bot.send_message(chat_id=update.message.chat.id, text='<a href="{}">{}</a>'.format(image_url,generate),parse_mode='HTML')
+        await context.bot.delete_message(chat_id=update.message.chat.id, message_id=update.message.message_id)
+        print("Sent Image Successfully !")
+    except BaseException:
+        print("Some Error in Dalle.")
+        await context.bot.send_message(chat_id=update.message.chat.id, text="Sorry, Couldn't generate Image from your message : <code>{}</code> . \n\n Please try again later. \n\n <i>Note: Sometimes it happens when you violate Terms and Conditions !</i>".format(generate),parse_mode='HTML')
+
+async def gpt(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    rawtext = str((update.message['text']))
+    title = rawtext[4:]
+    print("Completing Text : " + title)
+    try :
+        response = openai.Completion.create(
+        engine="text-davinci-002",
+        prompt=title,
+        max_tokens=2000,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+        )
+        completedtext = response.choices[0].text
+        await context.bot.send_message(chat_id=update.message.chat.id, text='<b>{}</b> \n{}'.format(title,completedtext),parse_mode='HTML')
+        await context.bot.delete_message(chat_id=update.message.chat.id, message_id=update.message.message_id)
+        print("Sent generated text !")
+    except BaseException:
+        print("Some Error in GPT.")
+        await context.bot.send_message(chat_id=update.message.chat.id, text="Sorry, Couldn't complete text from your message : <code>{}</code> . \n\n Please try again later.\n\n <i>Note: Sometimes it happens when you violate Terms and Conditions !</i>".format(title),parse_mode='HTML')
 
 
 async def main_url_dl(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -237,11 +279,15 @@ def main() -> None:
     application.add_handler(CommandHandler("clean", clean))
     #youtube music
     application.add_handler(CommandHandler("ytaudio", yt_audio))
+    
+    #DALLE
+    application.add_handler(CommandHandler("dalle", dalle))
+    
+    #gpt
+    application.add_handler(CommandHandler("gpt", gpt))
 
     #For other links
     application.add_handler(MessageHandler(filters.Regex('([^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})') & ~filters.COMMAND, main_url_dl))
-
-    #sessionfile watcher))
 
     # Run the bot until the user presses Ctrl-C
     application.run_polling()
