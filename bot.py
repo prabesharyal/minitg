@@ -34,11 +34,12 @@ def caption_cleaner(title):
     text = re.sub(r'[\s]{3}','',text)
     return text
 
+systemfiles = ('py','json','Procfile','txt','text','pip','git','pycache','cache','session','vendor','profile.d','heroku','env')
 
 def clean_clutter():
     print("Removing If any Previously unused files.")
     for files in os.listdir():    
-        if files.endswith(('py','json','Procfile','txt','text','pip','git','pycache','cache','session','vendor','profile.d','heroku'))==False:
+        if files.endswith(systemfiles)==False:
             if os.path.isdir(files) == True:
                 print("Removing Dir : {}".format(files))
                 shutil.rmtree(files)
@@ -114,7 +115,7 @@ async def yt_dlp_sender(update,context,CAPTION):
             'is a directory'
         elif medias.endswith(('avi', 'flv', 'mkv', 'mov', 'mp4', 'webm', '3g2', '3gp', 'f4v', 'mk3d', 'divx', 'mpg', 'ogv', 'm4v', 'wmv', 'aiff', 'alac', 'flac', 'm4a', 'mka', 'mp3', 'ogg', 'opus', 'wav','aac', 'ape', 'asf', 'f4a', 'f4b', 'm4b', 'm4p', 'm4r', 'oga', 'ogx', 'spx', 'vorbis', 'wma')):
             tosend.append(medias)
-        elif size < 50 and medias.endswith(('py','json','Procfile','txt','text','pip', 'md','git','pycache','cache','session','vendor','profile.d'))==False:
+        elif size < 50 and medias.endswith(systemfiles)==False:
             os.remove(medias)
         elif size > 50 or medias.endswith('part'):
             print(medias + "is "+str(size)+" MB."+"\n"+"Which is greater than 50 MB, So removing it !!")
@@ -163,7 +164,7 @@ async def yt_dlp_sender(update,context,CAPTION):
             print("Yt-DLP Sender, Message was already deleted.")
     
     for todlete in os.listdir('./'):
-        if os.path.isdir(todlete)==False and todlete.endswith(('py','json','Procfile','txt','text','pip','git','pycache','cache','session','vendor','profile.d'))==False:
+        if os.path.isdir(todlete)==False and todlete.endswith(systemfiles)==False:
             os.remove(todlete)
             print("removed file"+todlete)
 
@@ -248,7 +249,7 @@ async def main_url_dl(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         if re.match(r"(?:https:\/\/)?([vt]+|[www]+)\.?([tiktok]+)\.([com]+)\/([\/\w@?=&\.-]+)", URLS):
             CAPTION = yt_dlp_tiktok_dl(URLS)
             await yt_dlp_sender(update,context,CAPTION)
-        
+            
         elif re.match(r"((?:http|https):\/\/)(?:www.)?(?:instagram.com|instagr.am|instagr.com)\/(\w+)\/([\w\-/?=&]+)",URLS):
             try:
                 print("Instaloader Module Failed, retrying with yt-dlp")
@@ -256,7 +257,7 @@ async def main_url_dl(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                 await yt_dlp_sender(update,context,CAPTION)
             except BaseException:
                 print("yt-dlp module failed downloading this video. \n Maybe not a video or private one.")
-        
+                
         elif re.match(r"(?:https?:\/\/)?(?:www\.|m\.)?youtu\.?be(?:\.com)?\/?.*(?:watch|embed)?(?:.*v=|v\/|\/)([\w\-_\&=]+)?", URLS):
             CAPTION = yt_dlp_youtube_dl(URLS)
             await yt_dlp_sender(update,context,CAPTION)
