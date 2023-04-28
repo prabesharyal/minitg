@@ -126,14 +126,14 @@ async def yt_dlp_sender(update,context,CAPTION):
     no_of_files = len(tosend)
     if no_of_files == 1:
         files = tosend[0]
-        if files.endswith(('avi', 'flv', 'mkv', 'mov', 'mp4', 'webm', '3g2', '3gp', 'f4v', 'mk3d', 'divx', 'mpg', 'ogv', 'm4v', 'wmv')):
+        if files.endswith(('avi', 'flv', 'mkv', 'mov', 'mp4', 'webm', '3g2', '3gp', 'f4v', 'mk3d', 'divx', 'mpg', 'ogv', 'm4v', 'wmv')) and ((os.path.getsize(medias))/(1024*1024)) < 50:
                 print("Found Short Video and Sending!!!")
                 await context.bot.send_video(chat_id=update.message.chat_id, video=open(files, 'rb'), supports_streaming=True,caption = CAPTION, parse_mode='HTML')
                 print("Video {} was Sent Successfully!".format(files))
                 os.remove(files)
                 try:
                     await context.bot.delete_message(chat_id=update.message.chat.id, message_id=update.message.message_id)
-                except BaseException:
+                except BaseException as exception_var:
                     print("Message was already deleted.")
                 time.sleep(3)
         elif files.endswith(('aiff', 'alac', 'flac', 'm4a', 'mka', 'mp3', 'ogg', 'opus', 'wav','aac', 'ape', 'asf', 'f4a', 'f4b', 'm4b', 'm4p', 'm4r', 'oga', 'ogx', 'spx', 'vorbis', 'wma')):
@@ -143,7 +143,7 @@ async def yt_dlp_sender(update,context,CAPTION):
                 os.remove(files)
                 try:
                     await context.bot.delete_message(chat_id=update.message.chat.id, message_id=update.message.message_id)
-                except BaseException:
+                except BaseException as exception_var:
                     print("Message was already deleted. \n \n")
                 time.sleep(2)
     elif no_of_files > 1 and no_of_files<=10:
@@ -160,7 +160,7 @@ async def yt_dlp_sender(update,context,CAPTION):
         media_group = []
         try:
             await context.bot.delete_message(chat_id=update.message.chat.id, message_id=update.message.message_id)
-        except BaseException:
+        except BaseException as exception_var:
             print("Yt-DLP Sender, Message was already deleted.")
     
     for todlete in os.listdir('./'):
@@ -199,7 +199,7 @@ async def yt_audio(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try :
         CAPTION = yt_dlp_youtube_audio_dl(link)
         await yt_dlp_sender(update,context,CAPTION)
-    except BaseException:
+    except BaseException as exception_var:
         print("Audio Download Error")
         await context.bot.send_message(chat_id=update.message.chat.id, text="Sorry, Couldn't download audio of from given link : <code>{}</code> . \n Check link again and make sure if it works.".format(link),parse_mode='HTML')
 
@@ -214,7 +214,7 @@ async def dalle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await context.bot.send_message(chat_id=update.message.chat.id, text='<a href="{}">{}</a>'.format(image_url,generate),parse_mode='HTML')
         await context.bot.delete_message(chat_id=update.message.chat.id, message_id=update.message.message_id)
         print("Sent Image Successfully !")
-    except BaseException:
+    except BaseException as exception_var:
         print("Some Error in Dalle.")
         await context.bot.send_message(chat_id=update.message.chat.id, text="Sorry, Couldn't generate Image from your message : <code>{}</code> . \n\n Please try again later. \n\n <i>Note: Sometimes it happens when you violate Terms and Conditions !</i>".format(generate),parse_mode='HTML')
 
@@ -234,7 +234,7 @@ async def gpt(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await context.bot.send_message(chat_id=update.message.chat.id, text='*{}* \n\n{}'.format(title,completedtext),parse_mode='MARKDOWN')
         # await context.bot.delete_message(chat_id=update.message.chat.id, message_id=update.message.message_id)
         print("Sent generated text !")
-    except BaseException:
+    except BaseException as exception_var:
         print("Some Error in GPT.")
         await context.bot.send_message(chat_id=update.message.chat.id, text="Sorry, Couldn't complete text from your message : <code>{}</code> . \n\n Please try again later.\n\n <i>Note: Sometimes it happens when you violate Terms and Conditions !</i>".format(title),parse_mode='HTML')
 
@@ -255,21 +255,21 @@ async def main_url_dl(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                 print("Instaloader Module Failed, retrying with yt-dlp")
                 CAPTION = yt_dlp_ig_reel_dl(URLS)
                 await yt_dlp_sender(update,context,CAPTION)
-            except BaseException:
+            except BaseException as exception_var:
                 print("yt-dlp module failed downloading this video. \n Maybe not a video or private one.")
                 
         elif re.match(r"(?:https?:\/\/)?(?:www\.|m\.)?youtu\.?be(?:\.com)?\/?.*(?:watch|embed)?(?:.*v=|v\/|\/)([\w\-_\&=]+)?", URLS):
             CAPTION = yt_dlp_youtube_dl(URLS)
             try:
                 await yt_dlp_sender(update,context,CAPTION)
-            except BaseException:
+            except BaseException as exception_var:
                 print("Probably Large Size : {}".format(URLS))
                 clean_clutter()
         else:
             try:
                 CAPTION = yt_dlp_Others_dl(URLS)
                 await yt_dlp_sender(update,context,CAPTION)
-            except BaseException:
+            except BaseException as exception_var:
                 print("Unsupported URL : {}".format(URLS))
                 clean_clutter()
 
