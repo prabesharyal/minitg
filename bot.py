@@ -260,14 +260,18 @@ async def main_url_dl(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                 
         elif re.match(r"(?:https?:\/\/)?(?:www\.|m\.)?youtu\.?be(?:\.com)?\/?.*(?:watch|embed)?(?:.*v=|v\/|\/)([\w\-_\&=]+)?", URLS):
             CAPTION = yt_dlp_youtube_dl(URLS)
-            await yt_dlp_sender(update,context,CAPTION)
-        
+            try:
+                await yt_dlp_sender(update,context,CAPTION)
+            except BaseException:
+                print("Probably Large Size : {}".format(URLS))
+                clean_clutter()
         else:
             try:
                 CAPTION = yt_dlp_Others_dl(URLS)
                 await yt_dlp_sender(update,context,CAPTION)
             except BaseException:
                 print("Unsupported URL : {}".format(URLS))
+                clean_clutter()
 
 
 
