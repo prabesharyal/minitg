@@ -126,7 +126,7 @@ async def yt_dlp_sender(update,context,CAPTION):
     no_of_files = len(tosend)
     if no_of_files == 1:
         files = tosend[0]
-        if files.endswith(('avi', 'flv', 'mkv', 'mov', 'mp4', 'webm', '3g2', '3gp', 'f4v', 'mk3d', 'divx', 'mpg', 'ogv', 'm4v', 'wmv')) and ((os.path.getsize(medias))/(1024*1024)) < 50:
+        if files.endswith(('avi', 'flv', 'mkv', 'mov', 'mp4', 'webm', '3g2', '3gp', 'f4v', 'mk3d', 'divx', 'mpg', 'ogv', 'm4v', 'wmv')) and ((os.path.getsize(tosend[0]))/(1024*1024)) < 50:
                 print("Found Short Video and Sending!!!")
                 await context.bot.send_video(chat_id=update.message.chat_id, video=open(files, 'rb'), supports_streaming=True,caption = CAPTION, parse_mode='HTML')
                 print("Video {} was Sent Successfully!".format(files))
@@ -270,6 +270,7 @@ async def main_url_dl(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                 CAPTION = yt_dlp_Others_dl(URLS)
                 await yt_dlp_sender(update,context,CAPTION)
             except BaseException as exception_var:
+                
                 print("Unsupported URL : {}".format(URLS))
                 clean_clutter()
 
